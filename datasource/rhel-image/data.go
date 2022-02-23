@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 
 	"github.com/hashicorp/hcl/v2/hcldec"
 	"github.com/hashicorp/packer-plugin-sdk/hcl2helper"
@@ -23,24 +22,6 @@ const (
 	imageDetailsUrlFormat = "https://api.access.redhat.com/management/v1/images/%v/download"
 	defaultTargetDirectory = "/tmp"
 )
-
-type HTTPClient interface {
-	Do(req *http.Request) (*http.Response, error)
-}
-
-var (
-	Client HTTPClient
-	NoRedirectClient HTTPClient
-)
-
-func init() {
-	NoRedirectClient = &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-	}
-	Client = &http.Client{}
-}
 
 type Config struct {
 	OfflineToken string `mapstructure:"offline_token"`
@@ -73,14 +54,10 @@ func (d *Datasource) OutputSpec() hcldec.ObjectSpec {
 }
 
 func getAccessToken(refreshToken string) (*string, error) {
-	payload := url.Values{"client_id": {"rhsm-api"}, "grant_type": {"refresh_token"}, "refresh_token": {refreshToken}}
-	req, err := http.NewRequest("POST", refreshTokenUrl, strings.NewReader(payload.Encode()))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	resp, err := Client.Do(req)
+	resp, err := http.PostForm(
+		refreshTokenUrl,
+		url.Values{"client_id": {"rhsm-api"}, "grant_type": {"refresh_token"}, "refresh_token": {refreshToken}},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +92,13 @@ func getImageDetails(accessToken, checksum string) (*string, *string, error) {
 	bearer := "Bearer " + accessToken
 	req.Header.Add("Authorization", bearer)
 
-	resp, err := NoRedirectClient.Do(req)
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -163,7 +146,8 @@ func downloadImage(targetPath, address, accessToken string) error {
 	bearer := "Bearer " + accessToken
 	req.Header.Add("Authorization", bearer)
 
-	resp, err := Client.Do(req)
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
