@@ -11,7 +11,7 @@ import (
 
 func main() {
 	pps := plugin.NewSet()
-	pps.RegisterDatasource("my-datasource", new(rhelImageData.Datasource))
+	pps.RegisterDatasource(plugin.DEFAULT_NAME, new(rhelImageData.Datasource))
 	pps.SetVersion(rhelImageVersion.PluginVersion)
 	err := pps.Run()
 	if err != nil {
