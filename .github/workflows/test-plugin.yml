@@ -46,4 +46,4 @@ jobs:
         env:
           PACKER_LOG: ${{ github.event.inputs.logs }}
           PKR_VAR_offline_token: ${{ secrets.OFFLINE_TOKEN }}
-          PKR_VAR_image_checksum: ${{ secrets.IMAGE_CHECKSUM }}
+          PKR_VAR_image_checksum: ${{ secrets.TEST_IMAGE_CHECKSUM }}
