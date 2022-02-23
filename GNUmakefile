@@ -1,4 +1,4 @@
-NAME=rhel
+NAME=rhel-image
 BINARY=packer-plugin-${NAME}
 
 COUNT?=1

@@ -1,4 +1,4 @@
-package rhel
+package rhelimage
 
 import (
 	_ "embed"
