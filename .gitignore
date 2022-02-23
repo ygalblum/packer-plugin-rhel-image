@@ -1,3 +1,4 @@
 main
 dist/*
 packer-plugin-rhel-image
+datasource/rhel-image/packer_init_log_rhel_image_datasource_basic_test.txt
