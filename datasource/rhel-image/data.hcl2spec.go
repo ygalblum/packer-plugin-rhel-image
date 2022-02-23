@@ -10,7 +10,9 @@ import (
 // FlatConfig is an auto-generated flat version of Config.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatConfig struct {
-	MockOption *string `mapstructure:"mock" cty:"mock" hcl:"mock"`
+	OfflineToken    *string `mapstructure:"offline_token" cty:"offline_token" hcl:"offline_token"`
+	ImageChecksum   *string `mapstructure:"image_checksum" cty:"image_checksum" hcl:"image_checksum"`
+	TargetDirectory *string `mapstructure:"target_directory" cty:"target_directory" hcl:"target_directory"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -25,7 +27,9 @@ func (*Config) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec }
 // The decoded values from this spec will then be applied to a FlatConfig.
 func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"mock": &hcldec.AttrSpec{Name: "mock", Type: cty.String, Required: false},
+		"offline_token":    &hcldec.AttrSpec{Name: "offline_token", Type: cty.String, Required: false},
+		"image_checksum":   &hcldec.AttrSpec{Name: "image_checksum", Type: cty.String, Required: false},
+		"target_directory": &hcldec.AttrSpec{Name: "target_directory", Type: cty.String, Required: false},
 	}
 	return s
 }
@@ -33,8 +37,7 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 // FlatDatasourceOutput is an auto-generated flat version of DatasourceOutput.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatDatasourceOutput struct {
-	Foo *string `mapstructure:"foo" cty:"foo" hcl:"foo"`
-	Bar *string `mapstructure:"bar" cty:"bar" hcl:"bar"`
+	ImagePath *string `mapstructure:"image_path" cty:"image_path" hcl:"image_path"`
 }
 
 // FlatMapstructure returns a new FlatDatasourceOutput.
@@ -49,8 +52,7 @@ func (*DatasourceOutput) FlatMapstructure() interface{ HCL2Spec() map[string]hcl
 // The decoded values from this spec will then be applied to a FlatDatasourceOutput.
 func (*FlatDatasourceOutput) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"foo": &hcldec.AttrSpec{Name: "foo", Type: cty.String, Required: false},
-		"bar": &hcldec.AttrSpec{Name: "bar", Type: cty.String, Required: false},
+		"image_path": &hcldec.AttrSpec{Name: "image_path", Type: cty.String, Required: false},
 	}
 	return s
 }
