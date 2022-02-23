@@ -2,7 +2,7 @@
 # It uses Packer at latest version to init, validate and build
 # an example configuration in a folder.
 # This action is compatible with Packer v1.7.0 or later.
-name: test plugin plugin
+name: test rhel-image plugin
 
 on:
   workflow_dispatch:
@@ -37,6 +37,8 @@ jobs:
           command: validate
         env:
           PACKER_LOG: ${{ github.event.inputs.logs }}
+          PKR_VAR_offline_token: ${{ secrets.OFFLINE_TOKEN }}
+          PKR_VAR_image_checksum: ${{ secrets.TEST_IMAGE_CHECKSUM }}
 
       - name: Build
         uses: hashicorp/packer-github-actions@master
