@@ -1,4 +1,2 @@
-locals {
-  foo = data.scaffolding-my-datasource.mock-data.foo
-  bar = data.scaffolding-my-datasource.mock-data.bar
-}
+variable "offline_token" { type = string }
+variable "image_checksum" { type = string }
