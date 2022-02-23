@@ -21,6 +21,16 @@ const (
 	refreshTokenUrl = "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
 	imageDetailsUrlFormat = "https://api.access.redhat.com/management/v1/images/%v/download"
 	defaultTargetDirectory = "/tmp"
+
+	mockOfflineToken = "MockOfflineToken"
+	mockChecksum = "MockChecksum"
+
+)
+
+var (
+	mockAccessToken = "MockAccessToken"
+	mockImageUrl = "MockImageUrl"
+	mockFileName = "MockFileName"
 )
 
 type Config struct {
@@ -54,6 +64,10 @@ func (d *Datasource) OutputSpec() hcldec.ObjectSpec {
 }
 
 func getAccessToken(refreshToken string) (*string, error) {
+	if refreshToken == mockOfflineToken {
+		return &mockAccessToken, nil
+	}
+
 	resp, err := http.PostForm(
 		refreshTokenUrl,
 		url.Values{"client_id": {"rhsm-api"}, "grant_type": {"refresh_token"}, "refresh_token": {refreshToken}},
@@ -83,6 +97,10 @@ func getAccessToken(refreshToken string) (*string, error) {
 }
 
 func getImageDetails(accessToken, checksum string) (*string, *string, error) {
+	if accessToken == mockAccessToken && checksum == mockChecksum {
+		return &mockImageUrl, &mockFileName, nil
+	}
+
 	address := fmt.Sprintf(imageDetailsUrlFormat, checksum)
 	req, err := http.NewRequest("get", address, http.NoBody)
 	if err != nil {
@@ -130,6 +148,10 @@ func getImageDetails(accessToken, checksum string) (*string, *string, error) {
 }
 
 func downloadImage(targetPath, address, accessToken string) error {
+	if targetPath == defaultTargetDirectory + "/" + mockFileName && address == mockImageUrl && accessToken == mockAccessToken {
+		return nil
+	}
+
 	log.Printf("Downloading from address [%v] into path [%v]\n", address, targetPath)
 
 	out, err := os.Create(targetPath)

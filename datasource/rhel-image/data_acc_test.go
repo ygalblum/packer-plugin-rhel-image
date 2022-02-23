@@ -46,7 +46,7 @@ func TestAccRhelImageDatasource(t *testing.T) {
 			}
 			logsString := string(logsBytes)
 
-			imagePathLog := "null.basic-example: image_path: /tmp/image.qcow2"
+			imagePathLog := "null.basic-example: image_path: /tmp/MockFileName"
 
 			if matched, _ := regexp.MatchString(imagePathLog+".*", logsString); !matched {
 				t.Fatalf("logs doesn't contain expected image_path value %q", logsString)

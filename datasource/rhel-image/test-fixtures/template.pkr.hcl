@@ -1,6 +1,6 @@
 data "rhel-image" "test" {
-  offline_token = "offlineToken"
-  image_checksum = "12345"
+  offline_token = "MockOfflineToken"
+  image_checksum = "MockChecksum"
 }
 
 locals {
