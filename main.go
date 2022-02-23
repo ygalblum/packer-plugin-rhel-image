@@ -3,16 +3,16 @@ package main
 import (
 	"fmt"
 	"os"
-	scaffoldingData "packer-plugin-scaffolding/datasource/scaffolding"
-	scaffoldingVersion "packer-plugin-scaffolding/version"
+	rhelData "packer-plugin-scaffolding/datasource/rhel"
+	rhelVersion "packer-plugin-scaffolding/version"
 
 	"github.com/hashicorp/packer-plugin-sdk/plugin"
 )
 
 func main() {
 	pps := plugin.NewSet()
-	pps.RegisterDatasource("my-datasource", new(scaffoldingData.Datasource))
-	pps.SetVersion(scaffoldingVersion.PluginVersion)
+	pps.RegisterDatasource("my-datasource", new(rhelData.Datasource))
+	pps.SetVersion(rhelVersion.PluginVersion)
 	err := pps.Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())

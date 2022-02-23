@@ -1,4 +1,4 @@
-package scaffolding
+package rhel
 
 import (
 	_ "embed"
