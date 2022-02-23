@@ -1,10 +1,10 @@
-data "scaffolding-my-datasource" "test" {
-  mock = "mock-config"
+data "rhel-image" "test" {
+  offline_token = "offlineToken"
+  image_checksum = "12345"
 }
 
 locals {
-  foo = data.scaffolding-my-datasource.test.foo
-  bar = data.scaffolding-my-datasource.test.bar
+  image_path = data.rhel-image.test.image_path
 }
 
 source "null" "basic-example" {
@@ -18,8 +18,7 @@ build {
 
   provisioner "shell-local" {
     inline = [
-      "echo foo: ${local.foo}",
-      "echo bar: ${local.bar}",
+      "echo image_path: ${local.image_path}",
     ]
   }
 }
