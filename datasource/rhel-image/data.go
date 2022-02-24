@@ -2,10 +2,13 @@
 package rhelimage
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -18,24 +21,23 @@ import (
 )
 
 const (
-	refreshTokenUrl = "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
-	imageDetailsUrlFormat = "https://api.access.redhat.com/management/v1/images/%v/download"
+	refreshTokenUrl        = "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
+	imageDetailsUrlFormat  = "https://api.access.redhat.com/management/v1/images/%v/download"
 	defaultTargetDirectory = "/tmp"
 
 	mockOfflineToken = "MockOfflineToken"
-	mockChecksum = "MockChecksum"
-
+	mockChecksum     = "MockChecksum"
 )
 
 var (
 	mockAccessToken = "MockAccessToken"
-	mockImageUrl = "MockImageUrl"
-	mockFileName = "MockFileName"
+	mockImageUrl    = "MockImageUrl"
+	mockFileName    = "MockFileName"
 )
 
 type Config struct {
-	OfflineToken string `mapstructure:"offline_token"`
-	ImageChecksum string `mapstructure:"image_checksum"`
+	OfflineToken    string `mapstructure:"offline_token"`
+	ImageChecksum   string `mapstructure:"image_checksum"`
 	TargetDirectory string `mapstructure:"target_directory"`
 }
 
@@ -147,16 +149,47 @@ func getImageDetails(accessToken, checksum string) (*string, *string, error) {
 	return &imageUrl, &imageFileName, nil
 }
 
+func calcFileHash(path string) (string, error) {
+	hasher := sha256.New()
+	s, err := ioutil.ReadFile(path)
+	hasher.Write(s)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hasher.Sum(nil)), nil
+}
+
+func checkFileExists(targetPath, expectedChecksum string) (bool, error) {
+	var err error
+	if _, err = os.Stat(targetPath); err == nil {
+		existingChecksum, err := calcFileHash(targetPath)
+		if err != nil {
+			return true, err
+		}
+
+		if existingChecksum != expectedChecksum {
+			return true, fmt.Errorf("the target file exists with a different checksum")
+		}
+
+		return true, nil
+
+	} else if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
+}
+
 func downloadImage(targetPath, address, accessToken string) error {
-	if targetPath == defaultTargetDirectory + "/" + mockFileName && address == mockImageUrl && accessToken == mockAccessToken {
+	if targetPath == defaultTargetDirectory+"/"+mockFileName && address == mockImageUrl && accessToken == mockAccessToken {
 		return nil
 	}
 
 	log.Printf("Downloading from address [%v] into path [%v]\n", address, targetPath)
 
 	out, err := os.Create(targetPath)
-	if err != nil  {
-	  return err
+	if err != nil {
+		return err
 	}
 	defer out.Close()
 
@@ -176,13 +209,13 @@ func downloadImage(targetPath, address, accessToken string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-	  return fmt.Errorf("bad status: %s", resp.Status)
+		return fmt.Errorf("bad status: %s", resp.Status)
 	}
 
 	// Writer the body to file
 	_, err = io.Copy(out, resp.Body)
-	if err != nil  {
-	  return err
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -206,9 +239,16 @@ func (d *Datasource) Execute() (cty.Value, error) {
 
 	targetPath := targetDirectory + "/" + *imageFilename
 
-	err = downloadImage(targetPath, *imageUrl, *accessToken)
+	exists, err := checkFileExists(targetPath, d.config.ImageChecksum)
 	if err != nil {
 		return cty.NullVal(cty.EmptyObject), err
+	}
+
+	if !exists {
+		err = downloadImage(targetPath, *imageUrl, *accessToken)
+		if err != nil {
+			return cty.NullVal(cty.EmptyObject), err
+		}
 	}
 
 	output := DatasourceOutput{
