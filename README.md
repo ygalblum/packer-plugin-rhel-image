@@ -11,7 +11,7 @@ Packer 1.7.3 or later is required.
 packer {
   required_plugins {
     rhel-image = {
-      version = ">= 0.1.0"
+      version = ">= 0.2.0"
       source = "github.com/ygalblum/rhel-image"
     }
   }
